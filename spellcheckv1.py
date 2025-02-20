@@ -7,6 +7,8 @@ format="{asctime} - {levelname} - {message}",
 style="{",
 datefmt="%Y-%m-%d %H:%M",
 )
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:1024"
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import Dataset
