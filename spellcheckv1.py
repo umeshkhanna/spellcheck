@@ -16,7 +16,7 @@ datefmt="%Y-%m-%d %H:%M",
 logging.warning("import done")
 
 # Load DeepSeek V3 model & tokenizer
-MODEL_NAME = "deepseek-ai/deepseek-v3"
+MODEL_NAME = "deepseek-ai/deepseek-llm-7b-base"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
