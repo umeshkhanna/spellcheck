@@ -1,7 +1,8 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
 from peft import LoraConfig, get_peft_model
-from datasets import load_dataset
+import pandas as pd
+from datasets import Dataset
 
 import logging
 logging.basicConfig(
@@ -28,27 +29,36 @@ model = AutoModelForCausalLM.from_pretrained(
 
 logging.warning("model loaded")
 
-# Load dataset (customize this part)
-# dataset = load_dataset("your_dataset")  # Example: JSON format {"input": "wrong sentence", "output": "corrected sentence"}
-# Example dataset
-dataset = {
-    "input": ["Ths is a smple txt.", "I hav a drem."],
-    "output": ["This is a simple text.", "I have a dream."]
-}
+logging.warning("tokenize dataset")
 
-# Tokenization function
+df = pd.read_parquet("0000.parquet")
+dataset = Dataset.from_pandas(df)
+
+# Define tokenization function
 def tokenize_function(examples):
-    inputs = [f"Fix the spelling: {text}" for text in examples["input"]]
-    labels = [text for text in examples["output"]]
+    inputs = [f"Fix spelling: {text}" for text in examples["incorr"]]
+    labels = [text for text in examples["corr"]]
+
+    # Tokenize inputs & outputs
     model_inputs = tokenizer(inputs, padding="max_length", truncation=True, max_length=512)
     with tokenizer.as_target_tokenizer():
         labels = tokenizer(labels, padding="max_length", truncation=True, max_length=512)
+
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
-# Tokenize dataset
+
 tokenized_dataset = dataset.map(tokenize_function, batched=True)
 
+logging.warning("tokenization completed")
+
+logging.warning("test train split")
+
+train_test_split = tokenized_dataset.train_test_split(test_size=0.1, seed=42)
+
+# Extract train and test datasets
+train_dataset = train_test_split["train"]
+test_dataset = train_test_split["test"]
 
 # LoRA Configuration
 lora_config = LoraConfig(
@@ -84,13 +94,14 @@ training_args = TrainingArguments(
     deepspeed="ds_config.json",  # Use DeepSpeed config
     report_to="none"
 )
+logging.warning("training started")
 
 # Initialize Trainer
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_dataset["train"],
-    eval_dataset=tokenized_dataset["validation"],
+    train_dataset=train_dataset,
+    eval_dataset=test_dataset,
 )
 
 # Train the model
