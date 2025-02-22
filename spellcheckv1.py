@@ -1,6 +1,4 @@
-import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
-from peft import LoraConfig, get_peft_model
 import pandas as pd
 from datasets import Dataset
 
@@ -31,7 +29,8 @@ logging.warning("model loaded")
 logging.warning("tokenize dataset")
 
 df = pd.read_parquet("0000.parquet")
-dataset = Dataset.from_pandas(df)
+
+dataset = Dataset.from_pandas(df[:100000])
 
 # Define tokenization function
 def tokenize_function(examples):
@@ -108,7 +107,7 @@ training_args = TrainingArguments(
     output_dir="./deepseek-spell-checker-res",
     per_device_train_batch_size=4,
     per_device_eval_batch_size=4,
-    num_train_epochs=3,
+    num_train_epochs=1,
     save_steps=1000,
     save_total_limit=2,
     eval_strategy="epoch"
