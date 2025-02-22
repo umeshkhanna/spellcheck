@@ -30,7 +30,7 @@ logging.warning("tokenize dataset")
 
 df = pd.read_parquet("0000.parquet")
 
-dataset = Dataset.from_pandas(df[:100000])
+dataset = Dataset.from_pandas(df[:10000])
 
 # Define tokenization function
 def tokenize_function(examples):
