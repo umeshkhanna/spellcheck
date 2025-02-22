@@ -22,7 +22,6 @@ MODEL_NAME = "deepseek-ai/deepseek-llm-7b-base"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
-    torch_dtype=torch.float16,
     device_map="auto",
     trust_remote_code=True
 )
@@ -61,47 +60,65 @@ train_dataset = train_test_split["train"]
 test_dataset = train_test_split["test"]
 
 # LoRA Configuration
-lora_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
-    target_modules=["q_proj", "v_proj"],  # Tune attention layers
-    lora_dropout=0.1,
-    bias="none",
-    task_type="CAUSAL_LM"
-)
+# lora_config = LoraConfig(
+#     r=16,
+#     lora_alpha=32,
+#     target_modules=["q_proj", "v_proj"],  # Tune attention layers
+#     lora_dropout=0.1,
+#     bias="none",
+#     task_type="CAUSAL_LM"
+# )
 
-# Apply LoRA
-model = get_peft_model(model, lora_config)
-model.print_trainable_parameters()
+# # Apply LoRA
+# model = get_peft_model(model, lora_config)
+# model.print_trainable_parameters()
 
 
 # Training Arguments
-training_args = TrainingArguments(
-    output_dir="./deepseek-spell-checker",
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    logging_dir="./logs",
-    logging_steps=10,
-    per_device_train_batch_size=4,
-    per_device_eval_batch_size=4,
-    gradient_accumulation_steps=8,
-    num_train_epochs=3,
-    learning_rate=2e-5,
-    weight_decay=0.01,
-    warmup_steps=100,
-    save_total_limit=2,
-    fp16=True,  # Enable mixed precision for speed
-    deepspeed="ds_config.json",  # Use DeepSpeed config
-    report_to="none"
-)
+# training_args = TrainingArguments(
+#     output_dir="./deepseek-spell-checker",
+#     eval_strategy="epoch",
+#     save_strategy="epoch",
+#     logging_dir="./logs",
+#     logging_steps=10,
+#     per_device_train_batch_size=4,
+#     per_device_eval_batch_size=4,
+#     gradient_accumulation_steps=8,
+#     num_train_epochs=3,
+#     learning_rate=2e-5,
+#     weight_decay=0.01,
+#     warmup_steps=100,
+#     save_total_limit=2,
+#     fp16=True,  # Enable mixed precision for speed
+#     deepspeed="ds_config.json",  # Use DeepSpeed config
+#     report_to="none"
+# )
+
+# # Initialize Trainer
+# trainer = Trainer(
+#     model=model,
+#     args=training_args,
+#     train_dataset=train_dataset,
+#     eval_dataset=test_dataset,
+# )
+
 logging.warning("training started")
 
-# Initialize Trainer
+training_args = TrainingArguments(
+    output_dir="./deepseek-spell-checker-res",
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
+    num_train_epochs=3,
+    save_steps=1000,
+    save_total_limit=2,
+    eval_strategy="epoch"
+)
+
 trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
-    eval_dataset=test_dataset,
+    eval_dataset=test_dataset
 )
 
 # Train the model
