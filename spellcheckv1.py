@@ -136,7 +136,7 @@ logging.warning("testing started")
 
 # Test the model
 def correct_text(text):
-    inputs = tokenizer(f"Fix the spelling: {text}", return_tensors="pt").to("cuda")
+    inputs = tokenizer(f"Fix spelling: {text}", return_tensors="pt").to("cuda")
     output = model.generate(**inputs, max_length=512)
     return tokenizer.decode(output[0], skip_special_tokens=True)
 
