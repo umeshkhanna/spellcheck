@@ -28,9 +28,8 @@ logging.warning("model loaded")
 
 logging.warning("tokenize dataset")
 
-df = pd.read_parquet("0000.parquet")
-
-dataset = Dataset.from_pandas(df[:10000])
+dataset = pd.read_csv('csv_file.csv')
+logging.warning("csv read successfully")
 
 # Define tokenization function
 def tokenize_function(examples):
