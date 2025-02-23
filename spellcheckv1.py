@@ -28,7 +28,8 @@ logging.warning("model loaded")
 
 logging.warning("tokenize dataset")
 
-dataset = pd.read_csv('csv_file.csv')
+df = pd.read_csv('csv_file.csv')
+dataset = Dataset.from_pandas(df)
 logging.warning("csv read successfully")
 
 # Define tokenization function
