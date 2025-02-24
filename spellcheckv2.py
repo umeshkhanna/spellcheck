@@ -47,11 +47,6 @@ from torch.utils.data import DataLoader
 train_dataloader = DataLoader(tokenized_dataset, batch_size=2, shuffle=True)  # Adjust batch size based on GPU memory
 
 
-from torch.utils.data import DataLoader
-
-train_dataloader = DataLoader(tokenized_dataset, batch_size=2, shuffle=True)  # Adjust batch size based on GPU memory
-
-
 import torch
 from tqdm import tqdm
 
