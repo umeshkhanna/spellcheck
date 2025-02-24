@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Load the tokenizer and model
-model_name = "deepseek-llm-7b"  # Replace with the actual model name
+model_name = "deepseek-ai/deepseek-llm-7b-base"  # Replace with the actual model name
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
