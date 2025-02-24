@@ -1,19 +1,21 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, DataCollatorForLanguageModeling
+from datasets import Dataset
+from torch.utils.data import DataLoader
+import torch
+from tqdm import tqdm
+from torch.amp.grad_scaler import GradScaler
+from torch import autocast
 
 # Load the tokenizer and model
-model_name = "deepseek-ai/deepseek-llm-7b-base"  # Replace with the actual model name
+model_name = "deepseek-ai/deepseek-llm-7b-base"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
-
+# Enable gradient checkpointing
 model.gradient_checkpointing_enable()
 
-from torch.cuda.amp import autocast, GradScaler
-
-scaler = GradScaler()  # For gradient scaling in mixed precision
-
-
-from datasets import Dataset
+# Enable mixed precision training
+scaler = GradScaler()
 
 # Example dataset of misspelled and corrected text pairs
 data = {
@@ -34,21 +36,21 @@ dataset = Dataset.from_dict(data)
 
 # Tokenize the dataset
 def tokenize_function(examples):
-    inputs = tokenizer(examples["misspelled"], truncation=True, padding="max_length", max_length=64)
-    labels = tokenizer(examples["corrected"], truncation=True, padding="max_length", max_length=64).input_ids
+    inputs = tokenizer(examples["misspelled"], truncation=True, padding="max_length", max_length=64, return_tensors="pt")
+    labels = tokenizer(examples["corrected"], truncation=True, padding="max_length", max_length=64, return_tensors="pt").input_ids
     inputs["labels"] = labels
     return inputs
 
 tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["misspelled", "corrected"])
 
+# Create a data collator
+data_collator = DataCollatorForLanguageModeling(
+    tokenizer=tokenizer,
+    mlm=False,  # Set to False for causal language modeling
+)
 
-from torch.utils.data import DataLoader
-
-train_dataloader = DataLoader(tokenized_dataset, batch_size=2, shuffle=True)  # Adjust batch size based on GPU memory
-
-
-import torch
-from tqdm import tqdm
+# Set up the DataLoader
+train_dataloader = DataLoader(tokenized_dataset, batch_size=2, shuffle=True, collate_fn=data_collator)
 
 # Training parameters
 epochs = 3
@@ -72,9 +74,14 @@ for epoch in range(epochs):
         labels = batch["labels"].to(device)
 
         # Forward pass with mixed precision
-        with autocast():
-            outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-            loss = outputs.loss / gradient_accumulation_steps  # Scale loss for gradient accumulation
+        if torch.cuda.is_available():
+            with autocast(device_type="cuda"):
+                outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+                loss = outputs.loss / gradient_accumulation_steps  # Scale loss for gradient accumulation
+        else:
+            with autocast(device_type="cpu"):
+                outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+                loss = outputs.loss / gradient_accumulation_steps  # Scale loss for gradient accumulation
 
         # Backward pass
         scaler.scale(loss).backward()
@@ -88,7 +95,7 @@ for epoch in range(epochs):
         total_loss += loss.item()
         progress_bar.set_postfix(loss=total_loss / (step + 1))
 
-
+# Save the fine-tuned model
 model.save_pretrained("./fine-tuned-spelling-correction")
 tokenizer.save_pretrained("./fine-tuned-spelling-correction")
 
