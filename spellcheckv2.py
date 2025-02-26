@@ -6,6 +6,18 @@ from tqdm import tqdm
 from torch.amp.grad_scaler import GradScaler
 from torch import autocast
 
+import logging
+logging.basicConfig(
+filename="step.log",
+encoding="utf-8",
+filemode="a",
+format="{asctime} - {levelname} - {message}",
+style="{",
+datefmt="%Y-%m-%d %H:%M",
+)
+
+logging.warning("import done")
+
 # Load the tokenizer and model
 model_name = "deepseek-ai/deepseek-llm-7b-base"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -122,3 +134,7 @@ misspelled_sentence = "I red a book."
 corrected_sentence = correct_spelling(misspelled_sentence)
 print(f"Original: {misspelled_sentence}")
 print(f"Corrected: {corrected_sentence}")
+
+logging.warning(corrected_sentence)
+logging.warning("orig: {misspelled_sentence}")
+logging.warning("orig: {corrected_sentence}")
