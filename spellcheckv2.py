@@ -111,11 +111,14 @@ for epoch in range(epochs):
 model.save_pretrained("./fine-tuned-spelling-correction")
 tokenizer.save_pretrained("./fine-tuned-spelling-correction")
 
+logging.warning("model saved")
 
 
 # Load the fine-tuned model and tokenizer
 model = AutoModelForCausalLM.from_pretrained("./fine-tuned-spelling-correction")
 tokenizer = AutoTokenizer.from_pretrained("./fine-tuned-spelling-correction")
+
+logging.warning("model loaded")
 
 # Test the model
 def correct_spelling(text):
