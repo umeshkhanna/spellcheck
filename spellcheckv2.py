@@ -111,30 +111,30 @@ logging.warning("model saved")
 
 
 # Load the fine-tuned model and tokenizer
-model = AutoModelForCausalLM.from_pretrained("./fine-tuned-spelling-correction")
-tokenizer = AutoTokenizer.from_pretrained("./fine-tuned-spelling-correction")
-model.to(device)
+# model = AutoModelForCausalLM.from_pretrained("./fine-tuned-spelling-correction")
+# tokenizer = AutoTokenizer.from_pretrained("./fine-tuned-spelling-correction")
+# model.to(device)
 
-logging.warning("model loaded")
+# logging.warning("model loaded")
 
-# Test the model
-def correct_spelling(text):
-    inputs = tokenizer(text, return_tensors="pt").to(device)
-    outputs = model.generate(**inputs, max_length=64)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+# # Test the model
+# def correct_spelling(text):
+#     inputs = tokenizer(text, return_tensors="pt").to(device)
+#     outputs = model.generate(**inputs, max_length=64)
+#     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-# Example usage
-misspelled_sentence = "I wnt to the stor to buy some breaad."
-corrected_sentence = correct_spelling(misspelled_sentence)
-print(f"Original: {misspelled_sentence}")
-print(f"Corrected: {corrected_sentence}")
+# # Example usage
+# misspelled_sentence = "I wnt to the stor to buy some breaad."
+# corrected_sentence = correct_spelling(misspelled_sentence)
+# print(f"Original: {misspelled_sentence}")
+# print(f"Corrected: {corrected_sentence}")
 
 
-misspelled_sentence = "I red a book."
-corrected_sentence = correct_spelling(misspelled_sentence)
-print(f"Original: {misspelled_sentence}")
-print(f"Corrected: {corrected_sentence}")
+# misspelled_sentence = "I red a book."
+# corrected_sentence = correct_spelling(misspelled_sentence)
+# print(f"Original: {misspelled_sentence}")
+# print(f"Corrected: {corrected_sentence}")
 
-logging.warning(corrected_sentence)
-logging.warning("orig: {misspelled_sentence}")
-logging.warning("orig: {corrected_sentence}")
+# logging.warning(corrected_sentence)
+# logging.warning("orig: {misspelled_sentence}")
+# logging.warning("orig: {corrected_sentence}")

@@ -1,5 +1,6 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import bitsandbytes as bnb
 
 import logging
 logging.basicConfig(
@@ -14,13 +15,28 @@ datefmt="%Y-%m-%d %H:%M",
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 model_name = 'fine-tuned-spelling-correction'
-model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir="./model_cache")
+# model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir="./model_cache")
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+
+
+# Load the tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
+# Load the model in 8-bit
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    load_in_8bit=True,  # Enable 8-bit loading
+    device_map="auto"   # Automatically map the model to available devices
+)
 
-# Load the fine-tuned model and tokenizer
-model = AutoModelForCausalLM.from_pretrained("./fine-tuned-spelling-correction")
-tokenizer = AutoTokenizer.from_pretrained("./fine-tuned-spelling-correction")
+
+
+# # Load the fine-tuned model and tokenizer
+# model = AutoModelForCausalLM.from_pretrained("./fine-tuned-spelling-correction")
+# tokenizer = AutoTokenizer.from_pretrained("./fine-tuned-spelling-correction")
 
 logging.warning("model loaded")
 
