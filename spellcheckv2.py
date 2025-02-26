@@ -49,7 +49,7 @@ dataset = Dataset.from_dict(data)
 # Tokenize the dataset
 def tokenize_function(examples):
     inputs = tokenizer(examples["misspelled"], truncation=True, padding="max_length", max_length=64, return_tensors="pt")
-    labels = tokenizer(examples["corrected"], truncation=True, padding="max_length", max_length=64, return_tensors="pt").input_ids
+    labels = tokenizer(examples["corrected"], truncation=True, padding="max_length", max_length=64, return_tensors="pt").input_ids.to(device)
     inputs["labels"] = labels
     return inputs
 
