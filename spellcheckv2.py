@@ -5,6 +5,7 @@ import torch
 from tqdm import tqdm
 from torch.amp.grad_scaler import GradScaler
 from torch import autocast
+import pandas as pd
 
 import logging
 logging.basicConfig(
@@ -30,30 +31,32 @@ model.gradient_checkpointing_enable()
 scaler = GradScaler()
 
 # Example dataset of misspelled and corrected text pairs
-data = {
-    "misspelled": [
-        "I wnt to the stor to buy some breaad.",
-        "She sed she wuld come over tonite.",
-        "The whether is nice todai."
-    ],
-    "corrected": [
-        "I went to the store to buy some bread.",
-        "She said she would come over tonight.",
-        "The weather is nice today."
-    ]
-}
+# data = {
+#     "misspelled": [
+#         "I wnt to the stor to buy some breaad.",
+#         "She sed she wuld come over tonite.",
+#         "The whether is nice todai."
+#     ],
+#     "corrected": [
+#         "I went to the store to buy some bread.",
+#         "She said she would come over tonight.",
+#         "The weather is nice today."
+#     ]
+# }
+df = pd.read_csv("csv_file.csv")
+data = Dataset.from_pandas(df)
 
 # Convert to Hugging Face Dataset
 dataset = Dataset.from_dict(data)
 
 # Tokenize the dataset
 def tokenize_function(examples):
-    inputs = tokenizer(examples["misspelled"], truncation=True, padding="max_length", max_length=64, return_tensors="pt")
-    labels = tokenizer(examples["corrected"], truncation=True, padding="max_length", max_length=64, return_tensors="pt").input_ids.to("cuda")
+    inputs = tokenizer(examples["incorr"], truncation=True, padding="max_length", max_length=64, return_tensors="pt")
+    labels = tokenizer(examples["corr"], truncation=True, padding="max_length", max_length=64, return_tensors="pt").input_ids.to("cuda")
     inputs["labels"] = labels
     return inputs
 
-tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["misspelled", "corrected"])
+tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["incorr", "corr"])
 
 # Create a data collator
 data_collator = DataCollatorForLanguageModeling(
