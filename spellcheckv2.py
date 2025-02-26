@@ -70,8 +70,9 @@ gradient_accumulation_steps = 4  # Accumulate gradients over multiple steps
 optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
 
 # Move model to GPU
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cuda"
+model.to("cuda")
 
 # Training loop
 for epoch in range(epochs):
@@ -86,14 +87,9 @@ for epoch in range(epochs):
         labels = batch["labels"].to(device)
 
         # Forward pass with mixed precision
-        if torch.cuda.is_available():
-            with autocast(device_type="cuda"):
-                outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-                loss = outputs.loss / gradient_accumulation_steps  # Scale loss for gradient accumulation
-        else:
-            with autocast(device_type="cpu"):
-                outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-                loss = outputs.loss / gradient_accumulation_steps  # Scale loss for gradient accumulation
+        with autocast(device_type="cuda"):
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+            loss = outputs.loss / gradient_accumulation_steps  # Scale loss for gradient accumulation
 
         # Backward pass
         scaler.scale(loss).backward()
