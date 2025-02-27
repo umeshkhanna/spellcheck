@@ -19,7 +19,7 @@ datefmt="%Y-%m-%d %H:%M",
 logging.warning("import done")
 
 # Load the CSV dataset
-dataset = load_dataset("csv", data_files="spelling_correction.csv")
+dataset = load_dataset("csv", data_files="csv_file.csv")
 
 logging.warning("dataset loaded")
 
@@ -50,10 +50,13 @@ def tokenize_function(examples):
 
 tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["incorr", "corr"])
 
+
 logging.warning("dataset tokenized")
 
-train_dataloader = DataLoader(tokenized_dataset, batch_size=8, shuffle=True)
+train_dataloader = DataLoader(tokenized_dataset["train"], batch_size=8, shuffle=True)
 
+
+logging.warning("training started")
 # Set up the optimizer
 optimizer = AdamW(model.parameters(), lr=5e-5)
 
@@ -63,8 +66,6 @@ model.to(device)
 
 # Training parameters
 epochs = 3
-
-logging.warning("training started")
 
 # Training loop
 for epoch in range(epochs):
@@ -91,6 +92,10 @@ for epoch in range(epochs):
         progress_bar.set_postfix(loss=total_loss / (step + 1))
 
 # Save the fine-tuned model
+model.save_pretrained("./fine-tuned-t5-spelling-correction")
+tokenizer.save_pretrained("./fine-tuned-t5-spelling-correction")
+
+# Save the fine-tuned model
 
 logging.warning("model saved")
 
@@ -112,6 +117,25 @@ def correct_spelling(text):
 
 # Example usage
 misspelled_text = "I wnt to the stor to buy some breaad."
+corrected_text = correct_spelling(misspelled_text)
+print(f"Original: {misspelled_text}")
+print(f"Corrected: {corrected_text}")
+
+logging.warning("testing done")
+
+
+
+# Example usage
+misspelled_text = "I red a book."
+corrected_text = correct_spelling(misspelled_text)
+print(f"Original: {misspelled_text}")
+print(f"Corrected: {corrected_text}")
+
+logging.warning("testing done")
+
+
+# Example usage
+misspelled_text = "I wnt to red a book."
 corrected_text = correct_spelling(misspelled_text)
 print(f"Original: {misspelled_text}")
 print(f"Corrected: {corrected_text}")
