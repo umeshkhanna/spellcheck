@@ -59,7 +59,7 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     save_steps=1000,
     save_total_limit=2,
-    evaluation_strategy="epoch"
+    eval_strategy="epoch"
 )
 
 trainer = Trainer(
