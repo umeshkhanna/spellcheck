@@ -1,5 +1,4 @@
-from datasets import Dataset
-import pandas as pd
+from datasets import load_dataset
 import logging
 from transformers import T5Tokenizer
 from transformers import T5ForConditionalGeneration
@@ -19,11 +18,8 @@ datefmt="%Y-%m-%d %H:%M",
 
 logging.warning("import done")
 
-df = pd.read_csv("csv_file.csv")
-# data = Dataset.from_pandas(df)
-
-# Convert to Hugging Face Dataset
-dataset = Dataset.from_dict(df)
+# Load the CSV dataset
+dataset = load_dataset("csv", data_files="spelling_correction.csv")
 
 logging.warning("dataset loaded")
 
